@@ -31,7 +31,7 @@ def add_files_to_zip(zip_file: zipfile.ZipFile, base_path ,pattern, prefix='', r
 try: os.mkdir('release')
 except FileExistsError: pass
 
-for target in ["osx.12-x64", "win-x64", "linux-x64"]: # we can do this because we don't need CUE4Parse-Natives
+for target in ["osx-x64", "win-x64", "linux-x64"]: # we can do this because we don't need CUE4Parse-Natives
     try:
         for f in glob.glob("./BlenderUmap/bin/Publish/**"):
             os.remove(f)
