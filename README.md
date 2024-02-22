@@ -5,10 +5,10 @@ BlenderUmap can also read .replay files from Fortnite and export actors from the
 
 ## Requirements
 - Blender 3.0 or higher
-- [dotnet 6 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- [dotnet 8 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 
 ## Build Requirements
-- [dotnet 6 sdk](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+- [dotnet 8 sdk](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 - windows sdk (windows only)
 - CPP compiler
 
