@@ -27,7 +27,7 @@ using CUE4Parse_Conversion;
 using CUE4Parse_Conversion.Meshes;
 using CUE4Parse_Conversion.Textures;
 using CUE4Parse.UE4.Assets.Exports.Component.StaticMesh;
-using CUE4Parse.UE4.Assets.Exports.Mesh;
+//using CUE4Parse.UE4.Assets.Exports.Mesh;
 using CUE4Parse.UE4.Assets.Exports.SkeletalMesh;
 using CUE4Parse.UE4.Objects.Core.Serialization;
 using Newtonsoft.Json;
@@ -86,10 +86,12 @@ namespace BlenderUmap {
 
                 var customVersions = new List<FCustomVersion>();
                 foreach (var t in config.CustomVersionOverrides) {
-                    customVersions.Add(new FCustomVersion(){ Key = new FGuid(t.Key), Version = t.Value });
+                    customVersions.Add(new FCustomVersion(){ Key = new FGuid(t.Key), Version = t.Value });                    
                 }
+                
+                FCustomVersionContainer customVersionContainer = new FCustomVersionContainer(customVersions);
 
-                provider = new MyFileProvider(paksDir, new VersionContainer(config.Game, optionOverrides: config.OptionsOverrides, customVersions: customVersions), config.EncryptionKeys, config.bDumpAssets, config.ObjectCacheSize);
+                provider = new MyFileProvider(paksDir, new VersionContainer(config.Game, optionOverrides: config.OptionsOverrides, customVersions: customVersionContainer), config.EncryptionKeys, config.bDumpAssets, config.ObjectCacheSize);
                 provider.LoadVirtualPaths();
                 
                 var newestUsmap = GetNewestUsmap(new DirectoryInfo("mappings"));
@@ -547,8 +549,10 @@ namespace BlenderUmap {
             }
 
             var localTransform = new FTransform(rot, loc, scale);
-            var finalTransform = new FTransform(parentTransform.ToMatrixWithScale() * localTransform.ToMatrixWithScale());
-
+            //FTransform finalTransform = new FTransform(parentTransform.ToMatrixWithScale() * localTransform.ToMatrixWithScale());
+            FMatrix combinedMatrix = new FMatrix(parentTransform.ToMatrixWithScale() * localTransform.ToMatrixWithScale());
+            FTransform finalTransform = new FTransform(combinedMatrix.ToQuat(), combinedMatrix.GetOrigin(), combinedMatrix.GetScaleVector());
+            
             // identifiers
             var comp = new JArray();
             comps.Add(comp);
@@ -649,7 +653,7 @@ namespace BlenderUmap {
         public static void ExportMesh(FPackageIndex mesh, List<Mat> materials) {
             if (NoExport || mesh == null || mesh.IsNull) return;
             var exportObj = mesh.Load<UObject>();
-            if (!(exportObj is IMesh meshExport) || meshExport == null) return;
+            if (!(exportObj is UStaticMesh) || !(exportObj is USkeletalMesh) || exportObj == null) return;
             var output = new FileInfo(Path.Combine(GetExportDir(exportObj).ToString(), exportObj.Name + ".pskx"));
 
             ThreadPool.QueueUserWorkItem(delegate {
@@ -662,13 +666,41 @@ namespace BlenderUmap {
 
                 try {
                     MeshExporter exporter;
-                    if (meshExport is UStaticMesh staticMesh) {
-                        exporter = new MeshExporter(staticMesh,
-                            new ExporterOptions() { SocketFormat = ESocketFormat.None }, false);
+                    if (exportObj is UStaticMesh staticMesh) {
+                        //exporter = new MeshExporter(staticMesh,
+                        //    new ExporterOptions() { SocketFormat = ESocketFormat.None }, false);
+                        exporter = new MeshExporter(staticMesh, 
+                            new ExporterOptions { SocketFormat = ESocketFormat.None });
+                        if (config.bReadMaterials)
+                        {
+                            var matObjs = staticMesh.Materials;
+
+                            if (matObjs != null)
+                            {
+                                foreach (var material in matObjs)
+                                {
+                                    materials.Add(new Mat(material));
+                                }
+                            }
+                        }
                     }
-                    else if (meshExport is USkeletalMesh skeletalMesh) {
+                    else if (exportObj is USkeletalMesh skeletalMesh) {
+                        //exporter = new MeshExporter(skeletalMesh,
+                        //    new ExporterOptions() { SocketFormat = ESocketFormat.None }, false);
                         exporter = new MeshExporter(skeletalMesh,
-                            new ExporterOptions() { SocketFormat = ESocketFormat.None }, false);
+                            new ExporterOptions { SocketFormat = ESocketFormat.None });
+                        if (config.bReadMaterials)
+                        {
+                            var matObjs = skeletalMesh.Materials;
+
+                            if (matObjs != null)
+                            {
+                                foreach (var material in matObjs)
+                                {
+                                    materials.Add(new Mat(material));
+                                }
+                            }
+                        }
                     }
                     else {
                         Log.Warning("Unknown mesh type: {0}", exportObj.ExportType);
@@ -696,17 +728,7 @@ namespace BlenderUmap {
                     Log.Warning(e, "Failed to save mesh");
                     Interlocked.Decrement(ref ThreadWorkCount);
                 }
-            });
-            
-            if (config.bReadMaterials) {
-                var matObjs = meshExport.Materials;
-
-                if (matObjs != null) {
-                    foreach (var material in matObjs) {
-                        materials.Add(new Mat(material));
-                    }
-                }
-            }
+            });      
         }
 
         public static DirectoryInfo GetExportDir(UObject exportObj) => GetExportDir(exportObj.Owner);
