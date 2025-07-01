@@ -23,18 +23,21 @@ using Unreal.Core.Models.Enums;
 namespace BlenderUmap.Extensions;
 
 public class NullPackage : AbstractUePackage {
-    public NullPackage(string name, IFileProvider provider, TypeMappings mappings) : base(name, provider, mappings) {
+    public NullPackage(string name, IFileProvider provider) : base(name, provider) {
     }
 
     public override FPackageFileSummary Summary => throw new NotImplementedException();
 
     public override FNameEntrySerialized[] NameMap => throw new NotImplementedException();
 
-    public override Lazy<UObject>[] ExportsLazy => throw new NotImplementedException();
+    //public override Lazy<UObject>[] ExportsLazy => throw new NotImplementedException();
 
-    public override bool IsFullyLoaded => throw new NotImplementedException();
+    public override int GetExportIndex(string name, StringComparison comparisonType = StringComparison.Ordinal) => throw new NotImplementedException();
 
-    public override UObject GetExportOrNull(string name, StringComparison comparisonType = StringComparison.Ordinal) {
+    public override int ImportMapLength => throw new NotImplementedException();
+    public override int ExportMapLength => throw new NotImplementedException();
+
+    public UObject GetExportOrNull(string name, StringComparison comparisonType = StringComparison.Ordinal) {
         throw new NotImplementedException();
     }
 
@@ -78,7 +81,7 @@ public class ReplayExporter
                 //     record = pkg_.GetExportOrNull("")
                 // }
 
-                if ((actor.GetObject() == null || !provider.TryLoadObject(actor.GetObject(), out record)))
+                if ((actor.GetObject() == null || !provider.TryLoadPackageObject(actor.GetObject(), out record)))
                     continue;
 
                 var ac = record;
@@ -202,7 +205,7 @@ public class ReplayExporter
             new JsonSerializer().Serialize(writer2, lights);
 #endif
 
-            return new NullPackage("/"+pkgName.Replace("\\", "/"), null, null);
+            return new NullPackage("/"+pkgName.Replace("\\", "/"), null);
     }
 
     public static JArray Vector(Unreal.Core.Models.FVector vector) => new() {vector.X, vector.Y, vector.Z};

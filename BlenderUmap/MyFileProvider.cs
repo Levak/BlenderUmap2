@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using CUE4Parse.Encryption.Aes;
+﻿using CUE4Parse.Encryption.Aes;
 using CUE4Parse.FileProvider;
 using CUE4Parse.FileProvider.Vfs;
 using CUE4Parse.UE4.Assets;
@@ -19,6 +10,16 @@ using CUE4Parse.UE4.Readers;
 using CUE4Parse.UE4.Versions;
 using CUE4Parse.Utils;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace BlenderUmap {
     public class MyFileProvider : DefaultFileProvider {
@@ -26,7 +27,7 @@ namespace BlenderUmap {
         private readonly Cache _cache;
         private readonly bool _bDumpAssets;
 
-        public MyFileProvider(string folder, VersionContainer version, List<EncryptionKey> encryptionKeys, bool bDumpAssets, int cacheSize) : base(folder, SearchOption.AllDirectories, true, version) {
+        public MyFileProvider(string folder, VersionContainer version, List<EncryptionKey> encryptionKeys, bool bDumpAssets, int cacheSize) : base(folder, SearchOption.AllDirectories, version, StringComparer.InvariantCultureIgnoreCase) {
             _cache = new Cache(cacheSize);
             _bDumpAssets = bDumpAssets;
 
@@ -50,41 +51,42 @@ namespace BlenderUmap {
             Log.Information("Successfully mounted {0} containers", mounted);
         }
 
-        public override bool TryLoadPackage(string path, out IPackage package) {
-            if (_cache.TryGet(path, out package))
-                return true;
-            else {
-                if (base.TryLoadPackage(path, out package)) {
-                    if (_cache.Size != 0)
-                        _cache.Add(path, package);
-                    if (_bDumpAssets)
-                        DumpJson(package);
-                    return true;
-                }
-            }
-            return false;
-        }
+        //public override bool TryLoadPackage(string path, [MaybeNullWhen(false)] out IPackage package)
+        //{
+        //    if (_cache.TryGet(path, out package))
+        //        return true;
+        //    else {
+        //        if (base.TryLoadPackage(path, out package)) {
+        //            if (_cache.Size != 0)
+        //                _cache.Add(path, package);
+        //            if (_bDumpAssets)
+        //                DumpJson(package);
+        //            return true;
+        //        }
+        //    }
+        //    return false;
+        //}
         
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public override bool TryLoadObject(string? objectPath, out UObject export)
-        {
-            export = TryLoadObjectAsync(objectPath).Result;
-            return export != null;
-        }
-
-        public override async Task<IPackage?> TryLoadPackageAsync(string path)
-        {
-            if (!TryFindGameFile(path, out var file))
-            {
-                return null;
-            }
-
-            if (TryLoadPackage(path, out var package)) {
-                return package;
-            }
-
-            return await TryLoadPackageAsync(file).ConfigureAwait(false);
-        }
+        //[MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //public override bool TryLoadObject(string? objectPath, out UObject export)
+        //{
+        //    export = TryLoadObjectAsync(objectPath).Result;
+        //    return export != null;
+        //}
+        //
+        //public override async Task<IPackage?> TryLoadPackageAsync(string path)
+        //{
+        //    if (!TryFindGameFile(path, out var file))
+        //    {
+        //        return null;
+        //    }
+        //
+        //    if (TryLoadPackage(path, out var package)) {
+        //        return package;
+        //    }
+        //
+        //    return await TryLoadPackageAsync(file).ConfigureAwait(false);
+        //}
 
         public void DumpJson(IPackage package) {
             var output = new FileInfo(Path.Combine(Program.GetExportDir(package).ToString(), package.Name.SubstringAfterLast("/") + ".json"));

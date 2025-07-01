@@ -30,15 +30,15 @@ class TextureMapping:
 
     def __init__(self) -> None:
         self.UV1 = Textures(
-            ["Trunk_BaseColor", "Diffuse", "DiffuseTexture", "Base_Color_Tex", "Tex_Color"],
-            ["Trunk_Normal", "Normals", "Normal", "Base_Normal_Tex", "Tex_Normal"],
-            ["Trunk_Specular", "SpecularMasks"],
-            ["EmissiveTexture"],
-            ["MaskTexture"]
+            ["Trunk_BaseColor", "Diffuse", "DiffuseTexture", "Base_Color_Tex", "Tex_Color", "BaseColorMap"],
+            ["Trunk_Normal", "Normals", "Normal", "Base_Normal_Tex", "Tex_Normal", "NRMMap", "NormalMap"],
+            ["Trunk_Specular", "SpecularMasks", "MRAMap", "Metalic_Roughness_Alpha_Map"],
+            ["EmissiveTexture", "EMMap"],
+            ["MaskTexture", "BAMap"]
         )
         self.UV2 = Textures(
             ["Diffuse_Texture_2"],
-            ["Normals_Texture_2"],
+            ["Normals_Texture_2", "DetailNormal"],
             ["Specular_Texture_2"],
             ["Emissive_Texture_2"],
             ["MaskTexture_2"]

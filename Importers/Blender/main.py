@@ -137,37 +137,142 @@ class UE4Version:  # idk why
     """Supported UE4 Versions"""
 
     Versions = (
-        ("GAME_UE4_0", "GAME_UE4_0", ""),
-        ("GAME_UE4_1", "GAME_UE4_1", ""),
-        ("GAME_UE4_2", "GAME_UE4_2", ""),
-        ("GAME_UE4_3", "GAME_UE4_3", ""),
-        ("GAME_UE4_4", "GAME_UE4_4", ""),
-        ("GAME_UE4_5", "GAME_UE4_5", ""),
-        ("GAME_UE4_6", "GAME_UE4_6", ""),
-        ("GAME_UE4_7", "GAME_UE4_7", ""),
-        ("GAME_UE4_8", "GAME_UE4_8", ""),
-        ("GAME_UE4_9", "GAME_UE4_9", ""),
-        ("GAME_UE4_10", "GAME_UE4_10", ""),
-        ("GAME_UE4_11", "GAME_UE4_11", ""),
-        ("GAME_UE4_12", "GAME_UE4_12", ""),
-        ("GAME_UE4_13", "GAME_UE4_13", ""),
-        ("GAME_UE4_14", "GAME_UE4_14", ""),
-        ("GAME_UE4_15", "GAME_UE4_15", ""),
-        ("GAME_UE4_16", "GAME_UE4_16", ""),
-        ("GAME_UE4_17", "GAME_UE4_17", ""),
-        ("GAME_UE4_18", "GAME_UE4_18", ""),
-        ("GAME_UE4_19", "GAME_UE4_19", ""),
-        ("GAME_UE4_20", "GAME_UE4_20", ""),
-        ("GAME_UE4_21", "GAME_UE4_21", ""),
-        ("GAME_UE4_22", "GAME_UE4_22", ""),
-        ("GAME_UE4_23", "GAME_UE4_23", ""),
-        ("GAME_UE4_24", "GAME_UE4_24", ""),
-        ("GAME_UE4_25", "GAME_UE4_25", ""),
-        ("GAME_UE4_26", "GAME_UE4_26", ""),
-        ("GAME_UE4_27", "GAME_UE4_27", ""),
-        ("GAME_UE5_0", "GAME_UE5_0", ""),
-        ("GAME_UE5_1", "GAME_UE5_1", ""),
-        ("GAME_UE5_2", "GAME_UE5_2", ""),
+      ("GAME_UE4_0", "GAME_UE4_0", ""),
+      ("GAME_UE4_1", "GAME_UE4_1", ""),
+      ("GAME_UE4_2", "GAME_UE4_2", ""),
+      ("GAME_UE4_3", "GAME_UE4_3", ""),
+      ("GAME_UE4_4", "GAME_UE4_4", ""),
+      ("GAME_UE4_5", "GAME_UE4_5", ""),
+      ("GAME_ArkSurvivalEvolved", "GAME_ArkSurvivalEvolved", ""),
+      ("GAME_UE4_6", "GAME_UE4_6", ""),
+      ("GAME_UE4_7", "GAME_UE4_7", ""),
+      ("GAME_UE4_8", "GAME_UE4_8", ""),
+      ("GAME_UE4_9", "GAME_UE4_9", ""),
+      ("GAME_UE4_10", "GAME_UE4_10", ""),
+      ("GAME_SeaOfThieves", "GAME_SeaOfThieves", ""),
+      ("GAME_UE4_11", "GAME_UE4_11", ""),
+      ("GAME_GearsOfWar4", "GAME_GearsOfWar4", ""),
+      ("GAME_DaysGone", "GAME_DaysGone", ""),
+      ("GAME_UE4_12", "GAME_UE4_12", ""),
+      ("GAME_UE4_13", "GAME_UE4_13", ""),
+      ("GAME_StateOfDecay2", "GAME_StateOfDecay2", ""),
+      ("GAME_UE4_14", "GAME_UE4_14", ""),
+      ("GAME_TEKKEN7", "GAME_TEKKEN7", ""),
+      ("GAME_UE4_15", "GAME_UE4_15", ""),
+      ("GAME_UE4_16", "GAME_UE4_16", ""),
+      ("GAME_PlayerUnknownsBattlegrounds", "GAME_PlayerUnknownsBattlegrounds", ""),
+      ("GAME_TrainSimWorld2020", "GAME_TrainSimWorld2020", ""),
+      ("GAME_UE4_17", "GAME_UE4_17", ""),
+      ("GAME_AWayOut", "GAME_AWayOut", ""),
+      ("GAME_UE4_18", "GAME_UE4_18", ""),
+      ("GAME_KingdomHearts3", "GAME_KingdomHearts3", ""),
+      ("GAME_FinalFantasy7Remake", "GAME_FinalFantasy7Remake", ""),
+      ("GAME_AceCombat7", "GAME_AceCombat7", ""),
+      ("GAME_FridayThe13th", "GAME_FridayThe13th", ""),
+      ("GAME_GameForPeace", "GAME_GameForPeace", ""),
+      ("GAME_UE4_19", "GAME_UE4_19", ""),
+      ("GAME_Paragon", "GAME_Paragon", ""),
+      ("GAME_UE4_20", "GAME_UE4_20", ""),
+      ("GAME_Borderlands3", "GAME_Borderlands3", ""),
+      ("GAME_UE4_21", "GAME_UE4_21", ""),
+      ("GAME_StarWarsJediFallenOrder", "GAME_StarWarsJediFallenOrder", ""),
+      ("GAME_Undawn", "GAME_Undawn", ""),
+      ("GAME_UE4_22", "GAME_UE4_22", ""),
+      ("GAME_UE4_23", "GAME_UE4_23", ""),
+      ("GAME_ApexLegendsMobile", "GAME_ApexLegendsMobile", ""),
+      ("GAME_UE4_24", "GAME_UE4_24", ""),
+      ("GAME_TonyHawkProSkater12", "GAME_TonyHawkProSkater12", ""),
+      ("GAME_BigRumbleBoxingCreedChampions", "GAME_BigRumbleBoxingCreedChampions", ""),
+      ("GAME_UE4_25", "GAME_UE4_25", ""),
+      ("GAME_UE4_25_Plus", "GAME_UE4_25_Plus", ""),
+      ("GAME_RogueCompany", "GAME_RogueCompany", ""),
+      ("GAME_DeadIsland2", "GAME_DeadIsland2", ""),
+      ("GAME_KenaBridgeofSpirits", "GAME_KenaBridgeofSpirits", ""),
+      ("GAME_Strinova", "GAME_Strinova", ""),
+      ("GAME_SYNCED", "GAME_SYNCED", ""),
+      ("GAME_OperationApocalypse", "GAME_OperationApocalypse", ""),
+      ("GAME_Farlight84", "GAME_Farlight84", ""),
+      ("GAME_StarWarsHunters", "GAME_StarWarsHunters", ""),
+      ("GAME_ThePathless", "GAME_ThePathless", ""),
+      ("GAME_UE4_26", "GAME_UE4_26", ""),
+      ("GAME_GTATheTrilogyDefinitiveEdition", "GAME_GTATheTrilogyDefinitiveEdition", ""),
+      ("GAME_ReadyOrNot", "GAME_ReadyOrNot", ""),
+      ("GAME_BladeAndSoul", "GAME_BladeAndSoul", ""),
+      ("GAME_TowerOfFantasy", "GAME_TowerOfFantasy", ""),
+      ("GAME_FinalFantasy7Rebirth", "GAME_FinalFantasy7Rebirth", ""),
+      ("GAME_TheDivisionResurgence", "GAME_TheDivisionResurgence", ""),
+      ("GAME_StarWarsJediSurvivor", "GAME_StarWarsJediSurvivor", ""),
+      ("GAME_Snowbreak", "GAME_Snowbreak", ""),
+      ("GAME_TorchlightInfinite", "GAME_TorchlightInfinite", ""),
+      ("GAME_QQ", "GAME_QQ", ""),
+      ("GAME_WutheringWaves", "GAME_WutheringWaves", ""),
+      ("GAME_DreamStar", "GAME_DreamStar", ""),
+      ("GAME_MidnightSuns", "GAME_MidnightSuns", ""),
+      ("GAME_FragPunk", "GAME_FragPunk", ""),
+      ("GAME_RacingMaster", "GAME_RacingMaster", ""),
+      ("GAME_StellarBlade", "GAME_StellarBlade", ""),
+      ("GAME_UE4_27", "GAME_UE4_27", ""),
+      ("GAME_Splitgate", "GAME_Splitgate", ""),
+      ("GAME_HYENAS", "GAME_HYENAS", ""),
+      ("GAME_HogwartsLegacy", "GAME_HogwartsLegacy", ""),
+      ("GAME_OutlastTrials", "GAME_OutlastTrials", ""),
+      ("GAME_Valorant", "GAME_Valorant", ""),
+      ("GAME_Gollum", "GAME_Gollum", ""),
+      ("GAME_Grounded", "GAME_Grounded", ""),
+      ("GAME_DeltaForceHawkOps", "GAME_DeltaForceHawkOps", ""),
+      ("GAME_MortalKombat1", "GAME_MortalKombat1", ""),
+      ("GAME_VisionsofMana", "GAME_VisionsofMana", ""),
+      ("GAME_Spectre", "GAME_Spectre", ""),
+      ("GAME_KartRiderDrift", "GAME_KartRiderDrift", ""),
+      ("GAME_ThroneAndLiberty", "GAME_ThroneAndLiberty", ""),
+      ("GAME_MotoGP24", "GAME_MotoGP24", ""),
+      ("GAME_Stray", "GAME_Stray", ""),
+      ("GAME_CrystalOfAtlan", "GAME_CrystalOfAtlan", ""),
+      ("GAME_PromiseMascotAgency", "GAME_PromiseMascotAgency", ""),
+      ("GAME_UE4_28", "GAME_UE4_28", ""),
+
+      ("GAME_UE4_LATEST", "GAME_UE4_LATEST", ""),
+
+      ("GAME_UE5_0", "GAME_UE5_0", ""),
+      ("GAME_MeetYourMaker", "GAME_MeetYourMaker", ""),
+      ("GAME_BlackMythWukong", "GAME_BlackMythWukong", ""),
+      ("GAME_UE5_1", "GAME_UE5_1", ""),
+      ("GAME_3on3FreeStyleRebound", "GAME_3on3FreeStyleRebound", ""),
+      ("GAME_Stalker2", "GAME_Stalker2", ""),
+      ("GAME_TheCastingofFrankStone", "GAME_TheCastingofFrankStone", ""),
+      ("GAME_SilentHill2Remake", "GAME_SilentHill2Remake", ""),
+      ("GAME_UE5_2", "GAME_UE5_2", ""),
+      ("GAME_DeadByDaylight", "GAME_DeadByDaylight", ""),
+      ("GAME_PaxDei", "GAME_PaxDei", ""),
+      ("GAME_TheFirstDescendant", "GAME_TheFirstDescendant", ""),
+      ("GAME_MetroAwakening", "GAME_MetroAwakening", ""),
+      ("GAME_ARKSurvivalAscended", "GAME_ARKSurvivalAscended", ""),
+      ("GAME_DuneAwakening", "GAME_DuneAwakening", ""),
+      ("GAME_UE5_3", "GAME_UE5_3", ""),
+      ("GAME_MarvelRivals", "GAME_MarvelRivals", ""),
+      ("GAME_Placeholder", "GAME_Placeholder", ""),
+      ("GAME_NobodyWantsToDie", "GAME_NobodyWantsToDie", ""),
+      ("GAME_MonsterJamShowdown", "GAME_MonsterJamShowdown", ""),
+      ("GAME_Rennsport", "GAME_Rennsport", ""),
+      ("GAME_AshesOfCreation", "GAME_AshesOfCreation", ""),
+      ("GAME_Avowed", "GAME_Avowed", ""),
+      ("GAME_UE5_4", "GAME_UE5_4", ""),
+      ("GAME_FunkoFusion", "GAME_FunkoFusion", ""),
+      ("GAME_InfinityNikki", "GAME_InfinityNikki", ""),
+      ("GAME_NevernessToEverness", "GAME_NevernessToEverness", ""),
+      ("GAME_Gothic1Remake", "GAME_Gothic1Remake", ""),
+      ("GAME_SplitFiction", "GAME_SplitFiction", ""),
+      ("GAME_WildAssault", "GAME_WildAssault", ""),
+      ("GAME_InZOI", "GAME_InZOI", ""),
+      ("GAME_TempestRising", "GAME_TempestRising", ""),
+      ("GAME_UE5_5", "GAME_UE5_5", ""),
+      ("GAME_Brickadia", "GAME_Brickadia", ""),
+      ("GAME_Splitgate2", "GAME_Splitgate2", ""),
+      ("GAME_DeadzoneRogue", "GAME_DeadzoneRogue", ""),
+      ("GAME_MotoGP25", "GAME_MotoGP25", ""),
+      ("GAME_Wildgate", "GAME_Wildgate", ""),
+      ("GAME_UE5_6", "GAME_UE5_6", ""),
+      ("GAME_UE5_7", "GAME_UE5_7", ""),
     )
 
 @register_class
@@ -715,14 +820,14 @@ def create_node_groups():
 
         # I/O
         g_in = uvm.nodes.new("NodeGroupInput")
-        uvm.interface.new_socket(name="NodeSocketColor", in_out='INPUT')
-        uvm.interface.new_socket(name="NodeSocketShader", in_out='INPUT')
-        uvm.interface.new_socket(name="NodeSocketShader", in_out='INPUT')
-        uvm.interface.new_socket(name="NodeSocketShader", in_out='INPUT')
-        uvm.interface.new_socket(name="NodeSocketShader", in_out='INPUT')
+        uvm.interface.new_socket(name="Diffuse", socket_type="NodeSocketColor", in_out='INPUT')
+        uvm.interface.new_socket(name="Normal", socket_type="NodeSocketShader", in_out='INPUT')
+        uvm.interface.new_socket(name="Specular", socket_type="NodeSocketShader", in_out='INPUT')
+        uvm.interface.new_socket(name="Emission", socket_type="NodeSocketShader", in_out='INPUT')
+        uvm.interface.new_socket(name="Alpha", socket_type="NodeSocketShader", in_out='INPUT')
 
         g_out = uvm.nodes.new("NodeGroupOutput")
-        uvm.interface.new_socket(name="NodeSocketShader", in_out='OUTPUT')
+        uvm.interface.new_socket(name="Shader", socket_type="NodeSocketShader", in_out='OUTPUT')
         g_in.location = [-1700, 220]
         g_out.location = [300, 300]
         uvm.links.new(g_in.outputs[0], sep.inputs[0])
@@ -743,7 +848,7 @@ def create_node_groups():
 
         g_in = tex_shader.nodes.new("NodeGroupInput")
         g_out = tex_shader.nodes.new("NodeGroupOutput")
-        tex_shader.interface.new_socket(name="NodeSocketShader", in_out='OUTPUT')
+        tex_shader.interface.new_socket(name="Shader", socket_type="NodeSocketShader", in_out='OUTPUT')
         g_in.location = [-700, 0]
         g_out.location = [350, 300]
 
@@ -752,8 +857,7 @@ def create_node_groups():
         tex_shader.links.new(principled_bsdf.outputs[0], g_out.inputs[0])
 
         # diffuse
-        tex_shader.inputs.new("NodeSocketColor", "Diffuse")
-        tex_shader.interface.new_socket("NodeSocketColor", 'INPUT')
+        tex_shader.interface.new_socket(name="Diffuse", socket_type="NodeSocketColor", in_out='INPUT')
         tex_shader.links.new(g_in.outputs[0], principled_bsdf.inputs["Base Color"])
 
         # normal
@@ -765,21 +869,20 @@ def create_node_groups():
         norm_curve.mapping.curves[1].points[0].location = [0, 1]
         norm_curve.mapping.curves[1].points[1].location = [1, 0]
 
-        tex_shader.inputs.new("NodeSocketColor", "Normal")
-        tex_shader.interface.new_socket(name="NodeSocketColor", in_out='INPUT')
+        norm_input = tex_shader.interface.new_socket(name="Normal", socket_type="NodeSocketColor", in_out='INPUT')
         tex_shader.links.new(g_in.outputs[1], norm_curve.inputs[1])
         tex_shader.links.new(norm_curve.outputs[0], norm_map.inputs[1])
         tex_shader.links.new(norm_map.outputs[0], principled_bsdf.inputs["Normal"])
-        tex_shader.inputs[1].default_value = [0.5, 0.5, 1, 1]
+        norm_input.default_value = [0.5, 0.5, 1, 1]
 
         # specular
-        tex_shader.interface.new_socket(name="NodeSocketColor", in_out='INPUT')
+        spec_input = tex_shader.interface.new_socket(name="Specular", socket_type="NodeSocketColor", in_out='INPUT')
         spec_y = 140
         spec_separate_rgb = tex_shader.nodes.new("ShaderNodeSeparateRGB")
         spec_separate_rgb.location = [-200, spec_y]
         tex_shader.links.new(g_in.outputs[2], spec_separate_rgb.inputs[0])
         tex_shader.links.new(
-            spec_separate_rgb.outputs[0], principled_bsdf.inputs["Specular"]
+            spec_separate_rgb.outputs[0], principled_bsdf.inputs["Specular Tint"]
         )
         tex_shader.links.new(
             spec_separate_rgb.outputs[1], principled_bsdf.inputs["Metallic"]
@@ -787,28 +890,24 @@ def create_node_groups():
         tex_shader.links.new(
             spec_separate_rgb.outputs[2], principled_bsdf.inputs["Roughness"]
         )
-        tex_shader.inputs[2].default_value = [0.5, 0, 0.5, 1]
+        spec_input.default_value = [0.5, 0, 0.5, 1]
 
         # emission
-        tex_shader.interface.new_socket(name="NodeSocketColor", in_out='INPUT')
-        tex_shader.links.new(g_in.outputs[3], principled_bsdf.inputs["Emission"])
-        tex_shader.inputs[3].default_value = [0, 0, 0, 1]
+        emit_input = tex_shader.interface.new_socket(name="Emission", socket_type="NodeSocketColor", in_out='INPUT')
+        tex_shader.links.new(g_in.outputs[3], principled_bsdf.inputs["Emission Color"])
+        tex_shader.links.new(g_in.outputs[3], principled_bsdf.inputs["Emission Strength"])
+        emit_input.default_value = [0, 0, 0, 1]
 
         # alpha
-        tex_shader.inputs.new(name="NodeSocketColor", in_out='INPUT')
+        alpha_input = tex_shader.interface.new_socket(name="Alpha", socket_type="NodeSocketColor", in_out='INPUT')
         alpha_separate_rgb = tex_shader.nodes.new("ShaderNodeSeparateRGB")
         alpha_separate_rgb.location = [-200, -180]
         tex_shader.links.new(g_in.outputs[4], alpha_separate_rgb.inputs[0])
         tex_shader.links.new(
             alpha_separate_rgb.outputs[0], principled_bsdf.inputs["Alpha"]
         )
-        tex_shader.inputs[4].default_value = [1, 0, 0, 1]
+        alpha_input.default_value = [1, 0, 0, 1]
 
-        # tex_shader.inputs[0].name = "Diffuse"
-        # tex_shader.inputs[1].name = "Normal"
-        # tex_shader.inputs[2].name = "Specular"
-        # tex_shader.inputs[3].name = "Emission"
-        # tex_shader.inputs[4].name = "Alpha"
 
 def register():
     for cls in classes:

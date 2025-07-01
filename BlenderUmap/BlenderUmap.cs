@@ -1,4 +1,32 @@
-﻿using System;
+﻿using BlenderUmap;
+using BlenderUmap.Extensions;
+using CUE4Parse.Compression;
+using CUE4Parse.MappingsProvider;
+using CUE4Parse.UE4.Assets;
+using CUE4Parse.UE4.Assets.Exports;
+using CUE4Parse.UE4.Assets.Exports.Component.StaticMesh;
+using CUE4Parse.UE4.Assets.Exports.Material;
+//using CUE4Parse.UE4.Assets.Exports.Mesh;
+using CUE4Parse.UE4.Assets.Exports.SkeletalMesh;
+using CUE4Parse.UE4.Assets.Exports.StaticMesh;
+using CUE4Parse.UE4.Assets.Exports.Texture;
+using CUE4Parse.UE4.Assets.Objects;
+using CUE4Parse.UE4.Objects.Core.Math;
+using CUE4Parse.UE4.Objects.Core.Misc;
+using CUE4Parse.UE4.Objects.Core.Serialization;
+using CUE4Parse.UE4.Objects.Engine;
+using CUE4Parse.UE4.Objects.UObject;
+using CUE4Parse.UE4.Versions;
+using CUE4Parse.Utils;
+using CUE4Parse_Conversion;
+using CUE4Parse_Conversion.Meshes;
+using CUE4Parse_Conversion.Textures;
+using CUE4Parse_Conversion.Textures.BC;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Serilog;
+using SkiaSharp;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,32 +36,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BlenderUmap;
-using BlenderUmap.Extensions;
-using CUE4Parse.MappingsProvider;
-using CUE4Parse.UE4.Assets;
-using CUE4Parse.UE4.Assets.Exports;
-using CUE4Parse.UE4.Assets.Exports.Material;
-using CUE4Parse.UE4.Assets.Exports.StaticMesh;
-using CUE4Parse.UE4.Assets.Exports.Texture;
-using CUE4Parse.UE4.Assets.Objects;
-using CUE4Parse.UE4.Objects.Core.Math;
-using CUE4Parse.UE4.Objects.Core.Misc;
-using CUE4Parse.UE4.Objects.Engine;
-using CUE4Parse.UE4.Objects.UObject;
-using CUE4Parse.UE4.Versions;
-using CUE4Parse.Utils;
-using CUE4Parse_Conversion;
-using CUE4Parse_Conversion.Meshes;
-using CUE4Parse_Conversion.Textures;
-using CUE4Parse.UE4.Assets.Exports.Component.StaticMesh;
-//using CUE4Parse.UE4.Assets.Exports.Mesh;
-using CUE4Parse.UE4.Assets.Exports.SkeletalMesh;
-using CUE4Parse.UE4.Objects.Core.Serialization;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Serilog;
-using SkiaSharp;
 using static CUE4Parse.UE4.Assets.Exports.Texture.EPixelFormat;
 // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
@@ -61,11 +63,18 @@ namespace BlenderUmap {
 #if !DEBUG
         try {
 #endif
-            var configFile = new FileInfo("config.json");
+                var configFile = new FileInfo("config.json");
                 if (!configFile.Exists) {
                     Log.Error("config.json not found");
                     return;
                 }
+
+                DetexHelper.LoadDll();
+                DetexHelper.Initialize(DetexHelper.DLL_NAME);
+                ZlibHelper.DownloadDll();
+                ZlibHelper.Initialize(ZlibHelper.DLL_NAME);
+                OodleHelper.DownloadOodleDll();
+                OodleHelper.Initialize(OodleHelper.OODLE_DLL_NAME);
 
                 Log.Information("Reading config file {0}", configFile.FullName);
 
@@ -114,7 +123,9 @@ namespace BlenderUmap {
                 var file = new FileInfo("processed.json");
                 Log.Information("Writing to {0}", file.FullName);
                 using (var writer = file.CreateText()) {
-                    var pkgName = provider.CompactFilePath(pkg.Name);
+                    var pkgName = config.ExportPackage.EndsWith(".umap")
+                                    ? provider.CompactFilePath(pkg.Name)
+                                    : provider.CompactFilePath(config.ExportPackage).SubstringBeforeLast(".");
                     new JsonSerializer().Serialize(writer, pkgName);
                 }
 
@@ -156,8 +167,25 @@ namespace BlenderUmap {
             return lightcomps.Count > 0;
         }
 
-        public static IPackage ExportAndProduceProcessed(string path, List<string> loadedLevels) {
+        public static IPackage ExportAndProduceProcessed(string in_path, List<string> loadedLevels)
+        {
             UObject obj = null;
+            string pkgName = provider.CompactFilePath(in_path).SubstringBeforeLast(".").SubstringAfter("/");
+            var comps = new JArray();
+            var lights = new List<LightInfo2>();
+            List<string> fileList = new List<string>();
+            foreach (var f in provider.Files)
+            {
+                if (f.Key.StartsWith(in_path) && (f.Key.EndsWith(".umap") || f.Key.EndsWith(".replay")))
+                {
+                    fileList.Add(f.Key);
+                }
+            }
+
+            foreach (string _path in fileList)
+            {
+                string path = _path;
+
             if (path.EndsWith(".replay")) {
                 // throw new NotSupportedException("replays are not supported by this version of BlenderUmap.");
                 return ReplayExporter.ExportAndProduceProcessed(path, provider);
@@ -165,9 +193,11 @@ namespace BlenderUmap {
 
             if (provider.TryLoadPackage(path, out var pkg)) { // multiple exports with package name
                 if (pkg is Package notioPackage) {
-                    foreach (var export in notioPackage.ExportMap) {
-                        if (export.ClassName == "World") {
-                            obj = export.ExportObject.Value;
+                    foreach (var export in notioPackage.ExportsLazy)
+                    {
+                        if (export.Value.Class.Name == "World") {
+                            obj = export.Value;
+                            break;
                         }
                     }
                 }
@@ -177,9 +207,9 @@ namespace BlenderUmap {
                 if (path.EndsWith(".umap", StringComparison.OrdinalIgnoreCase))
                     path = $"{path.SubstringBeforeLast(".")}.{path.SubstringAfterLast("/").SubstringBeforeLast(".")}";
 
-                if (!provider.TryLoadObject(path, out obj)) {
+                if (!provider.TryLoadPackageObject(path, out obj)) {
                     Log.Warning("Object {0} not found", path);
-                    return null;
+                    continue;
                 }
             }
 
@@ -189,12 +219,10 @@ namespace BlenderUmap {
 
             if (obj is not UWorld world) {
                 Log.Information("{0} is not a World, won't try to export", obj.GetPathName());
-                return null;
+                continue;
             }
             loadedLevels.Add(provider.CompactFilePath(world.GetPathName()));
             var persistentLevel = world.PersistentLevel.Load<ULevel>();
-            var comps = new JArray();
-            var lights = new List<LightInfo2>();
             for (var index = 0; index < persistentLevel.Actors.Length; index++) {
                 var actorLazy = persistentLevel.Actors[index];
                 if (actorLazy == null || actorLazy.IsNull) continue;
@@ -240,8 +268,9 @@ namespace BlenderUmap {
                 }
             }
 
+            }
+
             // var pkg = world.Owner;
-            string pkgName = provider.CompactFilePath(obj.Owner!.Name).SubstringAfter("/");
             var file = new FileInfo(Path.Combine(MyFileProvider.JSONS_FOLDER.ToString(), pkgName + ".processed.json"));
             file.Directory.Create();
             Log.Information("Writing to {0}", file.FullName);
@@ -294,11 +323,11 @@ namespace BlenderUmap {
             // }
         }
 
-        public static void ProcessActor(UObject actor, List<LightInfo2> lights, JArray comps, List<string> loadedLevels, FTransform parentTransform = default) {
+        public static void ProcessActor(UObject actor, List<LightInfo2> lights, JArray comps, List<string> loadedLevels, FTransform? parentTransform = null) {
             if (actor.TryGetValue(out bool bHidden, "bHidden", "bHiddenInGame") && bHidden && !config.bExportHiddenObjects)
                 return;
 
-            if (parentTransform == default) parentTransform = FTransform.Identity;
+            parentTransform = parentTransform ?? FTransform.Identity;
             if (actor.TryGetValue(out FPackageIndex[] instanceComps, "InstanceComponents", "MergedMeshComponents", "BlueprintCreatedComponents")) {
                 var root = actor.GetOrDefault<UObject>("RootComponent", new UObject());
                 var relativeLocation = root.GetOrDefault<FVector>("RelativeLocation", FVector.ZeroVector);
@@ -379,7 +408,7 @@ namespace BlenderUmap {
             }
 
             actor.TryGetValue(out UObject staticMeshComp, "StaticMeshComponent", "SkeletalMeshComponent", "Component"); // /Script/Engine.StaticMeshActor:StaticMeshComponent or /Script/FortniteGame.BuildingSMActor:StaticMeshComponent
-            if (actor is UInstancedStaticMeshComponent && staticMeshComp == null) {
+            if ((actor is UInstancedStaticMeshComponent || actor is UStaticMeshComponent) && staticMeshComp == null) {
                 staticMeshComp = actor;
             }
 
@@ -549,18 +578,20 @@ namespace BlenderUmap {
             }
 
             var localTransform = new FTransform(rot, loc, scale);
-            //FTransform finalTransform = new FTransform(parentTransform.ToMatrixWithScale() * localTransform.ToMatrixWithScale());
-            FMatrix combinedMatrix = new FMatrix(parentTransform.ToMatrixWithScale() * localTransform.ToMatrixWithScale());
-            FTransform finalTransform = new FTransform(combinedMatrix.ToQuat(), combinedMatrix.GetOrigin(), combinedMatrix.GetScaleVector());
+            FVector localScale = localTransform.Scale3D;
+            localTransform.RemoveScaling(); // Remove Scaling temporarily, as it affects rotation in the calculation (e.g. 70% on X only => 90deg becomes 74deg)
+            FMatrix combinedMatrix = new FMatrix(localTransform.ToMatrixWithScale() * parentTransform.Value.ToMatrixWithScale());
+            FTransform finalTransform = new FTransform(combinedMatrix.ToQuat(), combinedMatrix.GetOrigin(), localScale);
             
             // identifiers
             var comp = new JArray();
+            string mesh_path = PackageIndexToDirPath(mesh);
             comps.Add(comp);
             comp.Add(actor.TryGetValue<FGuid>(out var guid, "MyGuid") // /Script/FortniteGame.BuildingActor:MyGuid
                 ? guid.ToString(EGuidFormats.Digits).ToLowerInvariant()
                 : Guid.NewGuid().ToString().Replace("-", ""));
             comp.Add(actor.Name);
-            comp.Add(PackageIndexToDirPath(mesh));
+            comp.Add(mesh_path);
             comp.Add(matsObj);
             comp.Add(JArray.FromObject(textureDataArr));
             comp.Add(Vector(finalTransform.Translation)); // /Script/Engine.SceneComponent:RelativeLocation
@@ -640,8 +671,9 @@ namespace BlenderUmap {
                     }
                     Log.Information("Saving texture to {0}", output.FullName);
                     var firstMip = texture.GetFirstMip(); // Modify this if you want lower res textures
-                    using var image = texture.Decode(firstMip);
-                    using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                    var image = texture.Decode(firstMip);
+                    string ext;
+                    var data = image.Encode(ETextureFormat.Png, out ext);
                     stream.Write(data.AsSpan());
                     stream.Close();
                     Interlocked.Decrement(ref ThreadWorkCount);
@@ -653,8 +685,39 @@ namespace BlenderUmap {
         public static void ExportMesh(FPackageIndex mesh, List<Mat> materials) {
             if (NoExport || mesh == null || mesh.IsNull) return;
             var exportObj = mesh.Load<UObject>();
-            if (!(exportObj is UStaticMesh) || !(exportObj is USkeletalMesh) || exportObj == null) return;
+            if (!(exportObj is UStaticMesh || exportObj is USkeletalMesh) || exportObj == null) return;
             var output = new FileInfo(Path.Combine(GetExportDir(exportObj).ToString(), exportObj.Name + ".pskx"));
+
+            if (exportObj is UStaticMesh staticMesh)
+            {
+                if (config.bReadMaterials)
+                {
+                    var matObjs = staticMesh.Materials;
+
+                    if (matObjs != null)
+                    {
+                        foreach (var material in matObjs)
+                        {
+                            materials.Add(new Mat(material));
+                        }
+                    }
+                }
+            }
+            else if (exportObj is USkeletalMesh skeletalMesh)
+            {
+                if (config.bReadMaterials)
+                {
+                    var matObjs = skeletalMesh.Materials;
+
+                    if (matObjs != null)
+                    {
+                        foreach (var material in matObjs)
+                        {
+                            materials.Add(new Mat(material));
+                        }
+                    }
+                }
+            }
 
             ThreadPool.QueueUserWorkItem(delegate {
                 FileStream stream;
@@ -671,36 +734,12 @@ namespace BlenderUmap {
                         //    new ExporterOptions() { SocketFormat = ESocketFormat.None }, false);
                         exporter = new MeshExporter(staticMesh, 
                             new ExporterOptions { SocketFormat = ESocketFormat.None });
-                        if (config.bReadMaterials)
-                        {
-                            var matObjs = staticMesh.Materials;
-
-                            if (matObjs != null)
-                            {
-                                foreach (var material in matObjs)
-                                {
-                                    materials.Add(new Mat(material));
-                                }
-                            }
-                        }
                     }
                     else if (exportObj is USkeletalMesh skeletalMesh) {
                         //exporter = new MeshExporter(skeletalMesh,
                         //    new ExporterOptions() { SocketFormat = ESocketFormat.None }, false);
                         exporter = new MeshExporter(skeletalMesh,
                             new ExporterOptions { SocketFormat = ESocketFormat.None });
-                        if (config.bReadMaterials)
-                        {
-                            var matObjs = skeletalMesh.Materials;
-
-                            if (matObjs != null)
-                            {
-                                foreach (var material in matObjs)
-                                {
-                                    materials.Add(new Mat(material));
-                                }
-                            }
-                        }
                     }
                     else {
                         Log.Warning("Unknown mesh type: {0}", exportObj.ExportType);
@@ -728,7 +767,7 @@ namespace BlenderUmap {
                     Log.Warning(e, "Failed to save mesh");
                     Interlocked.Decrement(ref ThreadWorkCount);
                 }
-            });      
+            });
         }
 
         public static DirectoryInfo GetExportDir(UObject exportObj) => GetExportDir(exportObj.Owner);

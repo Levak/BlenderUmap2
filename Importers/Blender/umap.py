@@ -13,13 +13,20 @@ from .texture import TextureMapping, Textures
 from .piana import *
 
 
-def get_importer() -> Callable[[str, bpy.types.Context], bpy.types.Object]:
+def get_importer(map_name:str) -> Callable[[str, bpy.types.Context], bpy.types.Object]:
     if bpy.context.preferences.addons[__package__].preferences.get("bUseExperimentalPskImporter", False):
         from .psk.reader import do_psk_import
         return do_psk_import
     else:
-        from io_import_scene_unreal_psa_psk_280 import pskimport
-        return pskimport
+        from bl_ext.blender_org.io_scene_psk_psa import psk_importer, psk
+        def importer(path: str, context: bpy.types.Context):
+          return psk_importer.import_psk(
+            psk.reader.read_psk(path),
+            context,
+            map_name,
+            psk_importer.PskImportOptions()
+          )
+        return importer
 
 # ---------- END INPUTS, DO NOT MODIFY ANYTHING BELOW UNLESS YOU NEED TO ----------
 def import_umap(processed_map_path: str,
@@ -33,7 +40,7 @@ def import_umap(processed_map_path: str,
     if reuse_maps and map_collection:
         return place_map(map_collection, into_collection)
 
-    importer = get_importer()
+    importer = get_importer(map_name)
 
     map_collection = bpy.data.collections.new(map_name)
     map_collection_inst = place_map(map_collection, into_collection)
@@ -50,7 +57,31 @@ def import_umap(processed_map_path: str,
             lights = json.loads(file.read())
         blights_exist = True
 
+    def merge(os: list, n: str):
+      if True:
+        bpy.ops.object.select_all(action='DESELECT')
+        m = bpy.data.meshes.new(n)
+        p = bpy.data.objects.new(n, m)
+        bpy.context.collection.objects.link(p)
+        p.select_set(True)
+        for o in os:
+          o.select_set(True)
+        bpy.context.view_layer.objects.active = p
+        bpy.ops.object.join()
+        print('Merged {} objects into {}'.format(len(os), bpy.context.active_object.name))
+        return p
+      else:
+        return None
+
+    chunk_i = 1
+    chunk = []
     for comp_i, comp in enumerate(comps):
+
+        if len(chunk) > 20:
+          merge(chunk, 'Chunk-{:03d}'.format(chunk_i))
+          chunk_i += 1
+          chunk.clear()
+
         # guid = comp[0]
         name = comp[1]
         mesh_path = comp[2]
@@ -67,7 +98,7 @@ def import_umap(processed_map_path: str,
         if len(name) > 50:
             name = name[:40] + f"_{abs(string_hash_code(name)):08x}"
 
-        print("\nActor %d of %d: %s" % (comp_i + 1, len(comps), name))
+        print("Actor %d of %d: %s" % (comp_i + 1, len(comps), name))
 
         def apply_ob_props(ob: bpy.types.Object, new_name: str = name) -> bpy.types.Object:
             ob.name = new_name
@@ -87,6 +118,8 @@ def import_umap(processed_map_path: str,
                     l = create_light(light, map_collection)
                     l.parent = ob
 
+            return ob
+
         if light_index < 0:
             for light in lights[abs(light_index)-1]["Props"]:
                 create_light(light, map_collection)
@@ -97,7 +130,6 @@ def import_umap(processed_map_path: str,
                 apply_ob_props(
                     import_umap(child_comp, map_collection, data_dir, reuse_maps, reuse_meshes, use_cube_as_fallback, use_generic_shader, use_generic_shader_as_fallback, tex_shader, texture_mappings),
                     name if i == 0 else ("%s_%d" % (name, i)))
-
             continue
 
         bpy.context.window.scene = map_scene
@@ -126,7 +158,7 @@ def import_umap(processed_map_path: str,
             pass
             # imported_object = new_object(bpy.data.meshes["__empty"]) # group-parent
         elif existing_mesh:
-            new_object(existing_mesh)
+            chunk.append(new_object(existing_mesh))
             continue
 
         full_mesh_path = os.path.join(data_dir, mesh_path)
@@ -152,6 +184,8 @@ def import_umap(processed_map_path: str,
 
             if instanceData and len(instanceData) > 0: # remove the mesh
                 bpy.ops.object.delete()
+            else:
+              chunk.append(imported)
         else:
             print("WARNING: Mesh not imported, defaulting to fallback mesh:", full_mesh_path)
             new_object()
@@ -162,6 +196,7 @@ def import_umap(processed_map_path: str,
             apply_ob_props(parent_ob)
             bpy.context.collection.objects.link(parent_ob)
 
+            inst_objs = []
             for i, instance in enumerate(instanceData):
                 ob = bpy.data.objects.new(name, bpy.data.meshes.get(key))
                 ob.name = name + "_" + str(i)
@@ -172,7 +207,11 @@ def import_umap(processed_map_path: str,
                 ob.rotation_euler = [radians(instance[1][2]), radians(-instance[1][0]), radians(-instance[1][1])]
                 ob.scale = instance[2]
                 ob.parent = parent_ob
+                inst_objs.append(obj)
+            # Join inst_objs
+            chunk.append(merge(inst_objs, name))
 
+    merge(chunk, 'Chunk-{:03d}'.format(chunk_i))
     return map_collection_inst
 
 def import_material(ob: bpy.types.Object,
@@ -325,7 +364,7 @@ def import_material(ob: bpy.types.Object,
 
         print("Material imported")
 
-    found_index = find_mat_index(ob.data.materials, m.name[:-4])  # remove .mat
+    found_index = find_mat_index(ob.data.materials, m_name)
     if found_index is None:
         if m_idx < len(ob.data.materials):
             ob.data.materials[m_idx] = m
